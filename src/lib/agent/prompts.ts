@@ -112,8 +112,23 @@ GENERATED DOCUMENTS (JSON):
 ${generatedJson}
 ---
 
-Check every employer, job title, date range, degree, certification, and
-numeric claim in the generated documents. Return:
-- pass: true only if everything is supported by the original CV.
-- fabrications: list of specific unsupported claims (empty if pass).
+Flag ONLY material fabrications — claims that would embarrass the customer if
+challenged in an interview:
+- invented employers, job titles, or date ranges
+- invented degrees, certifications, or institutions
+- invented tools/systems the CV never mentions in any form
+- invented numbers, or numbers changed from the original
+
+Do NOT flag (these are legitimate professional rewriting):
+- synonyms and standard industry phrasing for real duties
+  (e.g. "retail selling" rewritten as "secondary sales")
+- reasonable inference connecting facts the CV states separately
+  (e.g. reports "prepared in Excel" when the CV lists both reporting and Excel)
+- aspirational positioning language in headlines or summaries, as long as it
+  claims no untrue experience
+- reordering, emphasis, or tightening of real content
+
+Return:
+- pass: true unless there is at least one material fabrication.
+- fabrications: the material fabrications only (empty if pass).
 - notes: one sentence on overall quality.`;

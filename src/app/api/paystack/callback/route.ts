@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { settlePayment } from "@/lib/orders/fulfil";
+import { orderStore } from "@/lib/orders/store";
 
 export const maxDuration = 300;
 
@@ -19,7 +20,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(target, request.nextUrl.origin));
   } catch (error) {
     console.error("Payment settlement failed:", error);
-    // The order page shows the failed state and support contact.
-    return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+    // Send the customer to their order page — it shows the failed state
+    // and support contact rather than a dead end on the homepage.
+    const order = await orderStore.getByPaymentReference(reference);
+    const target = order ? `/order/${order.id}` : "/";
+    return NextResponse.redirect(new URL(target, request.nextUrl.origin));
   }
 }

@@ -82,22 +82,22 @@ export async function runGeneration(orderId: string): Promise<Order> {
 
   await orderStore.update(orderId, { status: "generating" });
 
+  const MAX_DRAFTS = 3; // a paid order deserves persistence before failing
+
   try {
-    const documents = await generateDocuments(order);
-    const qa = await runQaGate(order, documents);
-
-    if (!qa.pass) {
-      const retried = await generateDocuments(order, qa.fabrications);
-      const retryQa = await runQaGate(order, retried);
-      if (!retryQa.pass) {
-        throw new Error(
-          `QA gate failed twice; unresolved claims: ${retryQa.fabrications.join("; ")}`,
-        );
-      }
-      return orderStore.update(orderId, { documents: retried });
+    let fabrications: string[] = [];
+    for (let draft = 1; draft <= MAX_DRAFTS; draft += 1) {
+      const documents = await generateDocuments(
+        order,
+        fabrications.length ? fabrications : undefined,
+      );
+      const qa = await runQaGate(order, documents);
+      if (qa.pass) return await orderStore.update(orderId, { documents });
+      fabrications = [...new Set([...fabrications, ...qa.fabrications])];
     }
-
-    return await orderStore.update(orderId, { documents });
+    throw new Error(
+      `QA gate failed ${MAX_DRAFTS} times; unresolved claims: ${fabrications.join("; ")}`,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await orderStore.update(orderId, { status: "failed", error: message });

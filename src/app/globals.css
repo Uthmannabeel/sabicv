@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/*
+  SabiCV design tokens — "editor's desk" direction.
+  Warm paper surfaces, ink text, deep green as the single semantic accent
+  (progress, success, money). Signature element: editorial annotation marks —
+  the agent's decisions rendered like an editor's margin notes.
+  No gradients. No decorative color.
+*/
+@theme {
+  --color-paper: oklch(97.5% 0.006 85);
+  --color-paper-raised: oklch(99.2% 0.003 85);
+  --color-ink: oklch(21% 0.012 75);
+  --color-ink-muted: oklch(45% 0.012 75);
+  --color-ink-faint: oklch(62% 0.01 75);
+  --color-rule: oklch(88% 0.008 85);
+  --color-accent: oklch(45% 0.11 155);
+  --color-accent-strong: oklch(36% 0.1 155);
+  --color-accent-wash: oklch(94% 0.025 155);
+  --color-danger: oklch(50% 0.15 25);
+
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-instrument), system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--color-accent-wash);
+  color: var(--color-accent-strong);
+}

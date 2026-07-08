@@ -36,3 +36,33 @@ export async function settlePayment(reference: string): Promise<Order | null> {
   await runGeneration(paid.id);
   return deliverOrder(paid.id);
 }
+
+/**
+ * Owner-confirmed bank transfer: mark paid and run the pipeline.
+ * Only valid from awaiting_confirmation (set when the customer claimed
+ * they sent the transfer).
+ */
+export async function confirmTransfer(orderId: string): Promise<Order> {
+  const order = await orderStore.get(orderId);
+  if (!order) throw new Error(`Order not found: ${orderId}`);
+  if (order.status !== "awaiting_confirmation") {
+    throw new Error(`Order ${orderId} is not awaiting confirmation`);
+  }
+
+  const paid = await orderStore.update(order.id, {
+    status: "paid",
+    payment: {
+      reference: order.payment?.reference ?? orderId,
+      method: "transfer",
+      amountKobo: PACKAGES[order.packageId].priceKobo,
+      paidAt: new Date().toISOString(),
+      channel: "bank_transfer",
+      ...(order.payment?.transferClaimedAt
+        ? { transferClaimedAt: order.payment.transferClaimedAt }
+        : {}),
+    },
+  });
+
+  await runGeneration(paid.id);
+  return deliverOrder(paid.id);
+}

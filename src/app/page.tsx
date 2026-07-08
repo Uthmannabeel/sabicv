@@ -161,8 +161,8 @@ export default function Home() {
             ))}
           </div>
           <p className="mt-4 text-sm text-[color:var(--color-ink-faint)]">
-            Pay with card, transfer, or USSD via Paystack. One-time payment per
-            application — no subscription.
+            Pay by simple bank transfer. One-time payment per application — no
+            subscription, no card details asked.
           </p>
         </section>
 

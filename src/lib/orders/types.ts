@@ -33,7 +33,8 @@ export type PackageId = keyof typeof PACKAGES;
 export type OrderStatus =
   | "created" // form submitted, CV uploaded
   | "analyzed" // free match score produced, awaiting payment
-  | "paid" // payment verified, generation queued
+  | "awaiting_confirmation" // customer says transfer sent; owner to confirm
+  | "paid" // payment verified/confirmed, generation queued
   | "generating" // agent pipeline running
   | "delivered" // PDFs ready + email sent
   | "failed"; // pipeline error after payment (needs attention)
@@ -91,10 +92,12 @@ export interface Order {
   analysis?: MatchAnalysis;
   documents?: GeneratedDocuments;
   payment?: {
-    reference: string;
+    reference: string; // Paystack reference, or transfer code for transfers
+    method?: "paystack" | "transfer";
     amountKobo: number;
     paidAt?: string;
     channel?: string;
+    transferClaimedAt?: string; // when the customer said "I've sent it"
   };
   agentLog: AgentLogEntry[];
   error?: string;

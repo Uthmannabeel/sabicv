@@ -16,7 +16,7 @@ const instrumentSans = Instrument_Sans({
 export const metadata: Metadata = {
   title: "SabiCV — Get the CV that gets you shortlisted",
   description:
-    "Upload your CV, paste the job you want. SabiCV's AI agent rewrites your CV and writes a tailored cover letter in minutes. Pay with Paystack.",
+    "Upload your CV, paste the job you want. SabiCV's AI agent scores your match free, then rewrites your CV and cover letter in minutes. Pay by bank transfer.",
 };
 
 export default function RootLayout({

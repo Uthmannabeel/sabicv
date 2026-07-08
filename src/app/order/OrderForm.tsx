@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { PACKAGES, type PackageId, type MatchAnalysis } from "@/lib/orders/types";
 import { ScoreCard } from "@/components/ScoreCard";
+import { TransferPanel } from "@/components/TransferPanel";
 
 const naira = (kobo: number) => `₦${(kobo / 100).toLocaleString("en-NG")}`;
+const PAYMENT_MODE = process.env.NEXT_PUBLIC_PAYMENT_MODE ?? "transfer";
 
 type Phase =
   | { name: "form" }
@@ -83,22 +85,40 @@ export function OrderForm() {
     return (
       <div className="mt-10">
         <ScoreCard analysis={phase.analysis} />
-        <div className="mt-6 border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">
-          <p className="text-[15px] leading-relaxed">
-            Ready to fix it? The agent rewrites your CV for this exact job
-            {pkg.id !== "cv" ? ", writes your cover letter," : ""} and delivers
-            your documents in minutes.
-          </p>
-          <button
-            onClick={() => handlePay(phase.orderId)}
-            className="mt-5 w-full bg-[color:var(--color-ink)] px-7 py-4 text-[15px] font-medium text-[color:var(--color-paper)] transition-colors duration-200 hover:bg-[color:var(--color-accent-strong)] sm:w-auto"
-          >
-            Pay {naira(pkg.priceKobo)} — get my {pkg.name}
-          </button>
-          <p className="mt-3 text-[13px] text-[color:var(--color-ink-faint)]">
-            Card, transfer, or USSD via Paystack. Delivery link also goes to
-            your email.
-          </p>
+        <div className="mt-6">
+          {PAYMENT_MODE === "transfer" ? (
+            <>
+              <p className="mb-4 text-[15px] leading-relaxed">
+                Ready to fix it? The agent rewrites your CV for this exact job
+                {pkg.id !== "cv" ? ", writes your cover letter," : ""} and
+                delivers your documents within minutes of payment.
+              </p>
+              <TransferPanel
+                orderId={phase.orderId}
+                onClaimed={() => {
+                  window.location.href = `/order/${phase.orderId}`;
+                }}
+              />
+            </>
+          ) : (
+            <div className="border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">
+              <p className="text-[15px] leading-relaxed">
+                Ready to fix it? The agent rewrites your CV for this exact job
+                {pkg.id !== "cv" ? ", writes your cover letter," : ""} and
+                delivers your documents in minutes.
+              </p>
+              <button
+                onClick={() => handlePay(phase.orderId)}
+                className="mt-5 w-full bg-[color:var(--color-ink)] px-7 py-4 text-[15px] font-medium text-[color:var(--color-paper)] transition-colors duration-200 hover:bg-[color:var(--color-accent-strong)] sm:w-auto"
+              >
+                Pay {naira(pkg.priceKobo)} — get my {pkg.name}
+              </button>
+              <p className="mt-3 text-[13px] text-[color:var(--color-ink-faint)]">
+                Card, transfer, or USSD via Paystack. Delivery link also goes
+                to your email.
+              </p>
+            </div>
+          )}
         </div>
         {error && <p className="mt-4 text-sm text-[color:var(--color-danger)]">{error}</p>}
       </div>

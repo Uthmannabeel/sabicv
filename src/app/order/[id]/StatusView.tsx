@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { MatchAnalysis, OrderStatus } from "@/lib/orders/types";
+import { TransferPanel } from "@/components/TransferPanel";
+
+const PAYMENT_MODE = process.env.NEXT_PUBLIC_PAYMENT_MODE ?? "transfer";
 
 interface OrderView {
   id: string;
@@ -16,7 +19,11 @@ interface OrderView {
 }
 
 const POLL_INTERVAL_MS = 4000;
-const ACTIVE_STATUSES: OrderStatus[] = ["paid", "generating"];
+const ACTIVE_STATUSES: OrderStatus[] = [
+  "awaiting_confirmation",
+  "paid",
+  "generating",
+];
 
 const STEP_LABELS: Record<string, string> = {
   extract: "Reading your CV",
@@ -72,20 +79,23 @@ export function StatusView({ orderId }: { orderId: string }) {
   return (
     <div className="space-y-8">
       <Headline order={order} />
-      {order.status === "analyzed" && (
-        <div className="border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">
-          <p className="text-[15px] leading-relaxed">
-            Your payment wasn&apos;t completed, so the rewrite hasn&apos;t
-            started. Pick up where you left off:
-          </p>
-          <button
-            onClick={handlePay}
-            className="mt-4 bg-[color:var(--color-ink)] px-7 py-3.5 text-[15px] font-medium text-[color:var(--color-paper)] transition-colors duration-200 hover:bg-[color:var(--color-accent-strong)]"
-          >
-            Complete payment
-          </button>
-        </div>
-      )}
+      {order.status === "analyzed" &&
+        (PAYMENT_MODE === "transfer" ? (
+          <TransferPanel orderId={order.id} onClaimed={load} />
+        ) : (
+          <div className="border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">
+            <p className="text-[15px] leading-relaxed">
+              Your payment wasn&apos;t completed, so the rewrite hasn&apos;t
+              started. Pick up where you left off:
+            </p>
+            <button
+              onClick={handlePay}
+              className="mt-4 bg-[color:var(--color-ink)] px-7 py-3.5 text-[15px] font-medium text-[color:var(--color-paper)] transition-colors duration-200 hover:bg-[color:var(--color-accent-strong)]"
+            >
+              Complete payment
+            </button>
+          </div>
+        ))}
 
       {order.status === "delivered" && <Downloads order={order} />}
 
@@ -105,6 +115,10 @@ function Headline({ order }: { order: OrderView }) {
     analyzed: {
       title: "Awaiting payment.",
       body: "Your free score is done. Complete payment to start the rewrite.",
+    },
+    awaiting_confirmation: {
+      title: "Transfer sent — we're confirming it.",
+      body: "This usually takes minutes during the day. The moment it's confirmed, the agent starts writing and this page updates by itself.",
     },
     paid: {
       title: "Payment confirmed. The agent is on it.",

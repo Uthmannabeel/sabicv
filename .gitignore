@@ -19,3 +19,7 @@ coverage/
 # OS / editor noise
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+test-fixtures/*.pdf
+test-fixtures/docx-stage/

@@ -5,8 +5,23 @@ import {
   StyleSheet,
   Text,
   View,
+  type DocumentProps,
 } from "@react-pdf/renderer";
 import type { GeneratedDocuments } from "../orders/types";
+
+export type PdfElement = React.ReactElement<DocumentProps>;
+
+export function buildCvPdf(cv: GeneratedDocuments["cv"]): PdfElement {
+  return (<CvPdf cv={cv} />) as PdfElement;
+}
+
+export function buildCoverLetterPdf(params: {
+  fullName: string;
+  contactLine: string;
+  letter: string;
+}): PdfElement {
+  return (<CoverLetterPdf {...params} />) as PdfElement;
+}
 
 /**
  * ATS-safe PDF layouts: single column, real text, standard font (Helvetica),

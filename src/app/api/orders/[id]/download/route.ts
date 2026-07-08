@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import React from "react";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { orderStore } from "@/lib/orders/store";
-import { CvPdf, CoverLetterPdf } from "@/lib/pdf/documents";
+import {
+  buildCvPdf,
+  buildCoverLetterPdf,
+  type PdfElement,
+} from "@/lib/pdf/documents";
 
 export const maxDuration = 60;
 
@@ -24,18 +27,18 @@ export async function GET(
   const { cv } = order.documents;
   const surname = cv.fullName.split(" ").pop() ?? "SabiCV";
 
-  let element: React.ReactElement;
+  let element: PdfElement;
   let filename: string;
 
   if (doc === "letter" && order.documents.coverLetter) {
-    element = React.createElement(CoverLetterPdf, {
+    element = buildCoverLetterPdf({
       fullName: cv.fullName,
       contactLine: cv.contactLine,
       letter: order.documents.coverLetter,
     });
     filename = `${surname}-Cover-Letter.pdf`;
   } else if (doc === "cv") {
-    element = React.createElement(CvPdf, { cv });
+    element = buildCvPdf(cv);
     filename = `${surname}-CV.pdf`;
   } else {
     return NextResponse.json(

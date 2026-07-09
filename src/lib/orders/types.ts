@@ -93,7 +93,7 @@ export interface Order {
   documents?: GeneratedDocuments;
   payment?: {
     reference: string; // Paystack reference, or transfer code for transfers
-    method?: "paystack" | "transfer";
+    method?: "paystack" | "transfer" | "selar";
     amountKobo: number;
     paidAt?: string;
     channel?: string;

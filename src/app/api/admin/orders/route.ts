@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       amountKobo: PACKAGES[order.packageId].priceKobo,
       customer: order.customer,
       matchScore: order.analysis?.matchScore ?? null,
+      paymentMethod: order.payment?.method ?? null,
       transferCode:
         order.payment?.method === "transfer" ? order.payment.reference : null,
       transferClaimedAt: order.payment?.transferClaimedAt ?? null,

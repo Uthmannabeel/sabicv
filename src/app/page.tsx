@@ -161,8 +161,8 @@ export default function Home() {
             ))}
           </div>
           <p className="mt-4 text-sm text-[color:var(--color-ink-faint)]">
-            Pay by simple bank transfer. One-time payment per application — no
-            subscription, no card details asked.
+            Pay securely on Selar — card, bank transfer, or USSD. One-time
+            payment per application, no subscription.
           </p>
         </section>
 

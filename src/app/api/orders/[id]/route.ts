@@ -22,6 +22,8 @@ export async function GET(
       status: order.status,
       packageId: order.packageId,
       customerName: order.customer.name,
+      customerEmail: order.customer.email,
+      packageIdTyped: order.packageId,
       analysis: order.analysis ?? null,
       hasCoverLetter: Boolean(order.documents?.coverLetter),
       hasLinkedin: Boolean(order.documents?.linkedin),

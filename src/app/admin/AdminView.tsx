@@ -10,6 +10,7 @@ interface AdminOrder {
   amountKobo: number;
   customer: { name: string; email: string; whatsapp?: string };
   matchScore: number | null;
+  paymentMethod: string | null;
   transferCode: string | null;
   transferClaimedAt: string | null;
   paidAt: string | null;
@@ -194,13 +195,22 @@ export function AdminView() {
             </p>
             {order.status === "awaiting_confirmation" && (
               <div className="mt-3 flex flex-wrap items-center gap-4 border-l-2 border-[color:var(--color-danger)] pl-3">
-                <p className="text-[14px]">
-                  Look for code{" "}
-                  <span className="font-[family-name:var(--font-display)] text-lg">
-                    {order.transferCode}
-                  </span>{" "}
-                  ({naira(order.amountKobo)}) in your bank app.
-                </p>
+                {order.paymentMethod === "selar" ? (
+                  <p className="text-[14px]">
+                    Look for a Selar sale from{" "}
+                    <span className="font-medium">{order.customer.email}</span>{" "}
+                    for {naira(order.amountKobo)} (check Selar email or
+                    dashboard).
+                  </p>
+                ) : (
+                  <p className="text-[14px]">
+                    Look for code{" "}
+                    <span className="font-[family-name:var(--font-display)] text-lg">
+                      {order.transferCode}
+                    </span>{" "}
+                    ({naira(order.amountKobo)}) in your bank app.
+                  </p>
+                )}
                 <button
                   onClick={() => handleConfirm(order.id)}
                   disabled={confirming === order.id}

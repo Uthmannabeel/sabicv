@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { MatchAnalysis, OrderStatus } from "@/lib/orders/types";
 import { TransferPanel } from "@/components/TransferPanel";
+import { SelarPanel } from "@/components/SelarPanel";
+import type { PackageId } from "@/lib/orders/types";
 
 const PAYMENT_MODE = process.env.NEXT_PUBLIC_PAYMENT_MODE ?? "transfer";
 
@@ -10,7 +12,9 @@ interface OrderView {
   id: string;
   status: OrderStatus;
   packageId: string;
+  packageIdTyped: PackageId;
   customerName: string;
+  customerEmail: string;
   analysis: MatchAnalysis | null;
   hasCoverLetter: boolean;
   hasLinkedin: boolean;
@@ -80,7 +84,14 @@ export function StatusView({ orderId }: { orderId: string }) {
     <div className="space-y-8">
       <Headline order={order} />
       {order.status === "analyzed" &&
-        (PAYMENT_MODE === "transfer" ? (
+        (PAYMENT_MODE === "selar" ? (
+          <SelarPanel
+            orderId={order.id}
+            packageId={order.packageIdTyped}
+            customerEmail={order.customerEmail}
+            onClaimed={load}
+          />
+        ) : PAYMENT_MODE === "transfer" ? (
           <TransferPanel orderId={order.id} onClaimed={load} />
         ) : (
           <div className="border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">
@@ -117,7 +128,7 @@ function Headline({ order }: { order: OrderView }) {
       body: "Your free score is done. Complete payment to start the rewrite.",
     },
     awaiting_confirmation: {
-      title: "Transfer sent — we're confirming it.",
+      title: "Payment sent — we're confirming it.",
       body: "This usually takes minutes during the day. The moment it's confirmed, the agent starts writing and this page updates by itself.",
     },
     paid: {

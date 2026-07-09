@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PACKAGES, type PackageId, type MatchAnalysis } from "@/lib/orders/types";
 import { ScoreCard } from "@/components/ScoreCard";
 import { TransferPanel } from "@/components/TransferPanel";
+import { SelarPanel } from "@/components/SelarPanel";
 
 const naira = (kobo: number) => `₦${(kobo / 100).toLocaleString("en-NG")}`;
 const PAYMENT_MODE = process.env.NEXT_PUBLIC_PAYMENT_MODE ?? "transfer";
@@ -21,6 +22,7 @@ export function OrderForm() {
   const [phase, setPhase] = useState<Phase>({ name: "form" });
   const [packageId, setPackageId] = useState<PackageId>("cv_letter");
   const [fileName, setFileName] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -28,6 +30,7 @@ export function OrderForm() {
     setError(null);
     const form = new FormData(event.currentTarget);
     form.set("packageId", packageId);
+    setCustomerEmail(String(form.get("email") ?? ""));
     setPhase({ name: "analyzing" });
 
     try {
@@ -86,19 +89,30 @@ export function OrderForm() {
       <div className="mt-10">
         <ScoreCard analysis={phase.analysis} />
         <div className="mt-6">
-          {PAYMENT_MODE === "transfer" ? (
+          {PAYMENT_MODE === "transfer" || PAYMENT_MODE === "selar" ? (
             <>
               <p className="mb-4 text-[15px] leading-relaxed">
                 Ready to fix it? The agent rewrites your CV for this exact job
                 {pkg.id !== "cv" ? ", writes your cover letter," : ""} and
                 delivers your documents within minutes of payment.
               </p>
-              <TransferPanel
-                orderId={phase.orderId}
-                onClaimed={() => {
-                  window.location.href = `/order/${phase.orderId}`;
-                }}
-              />
+              {PAYMENT_MODE === "selar" ? (
+                <SelarPanel
+                  orderId={phase.orderId}
+                  packageId={packageId}
+                  customerEmail={customerEmail}
+                  onClaimed={() => {
+                    window.location.href = `/order/${phase.orderId}`;
+                  }}
+                />
+              ) : (
+                <TransferPanel
+                  orderId={phase.orderId}
+                  onClaimed={() => {
+                    window.location.href = `/order/${phase.orderId}`;
+                  }}
+                />
+              )}
             </>
           ) : (
             <div className="border border-[color:var(--color-rule)] bg-[color:var(--color-paper-raised)] p-6">

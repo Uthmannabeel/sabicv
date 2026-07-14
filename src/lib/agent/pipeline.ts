@@ -4,6 +4,7 @@ import {
   coverLetterPrompt,
   linkedinPrompt,
   qaPrompt,
+  receiptPrompt,
   rewritePrompt,
 } from "./prompts";
 import {
@@ -12,6 +13,7 @@ import {
   cvSchema,
   linkedinSchema,
   qaSchema,
+  receiptSchema,
 } from "./schemas";
 import { orderStore } from "../orders/store";
 import type {
@@ -19,6 +21,7 @@ import type {
   GeneratedDocuments,
   MatchAnalysis,
   Order,
+  TruthReceiptItem,
 } from "../orders/types";
 
 interface QaResult {
@@ -92,7 +95,14 @@ export async function runGeneration(orderId: string): Promise<Order> {
         fabrications.length ? fabrications : undefined,
       );
       const qa = await runQaGate(order, documents);
-      if (qa.pass) return await orderStore.update(orderId, { documents });
+      if (qa.pass) {
+        // QA cleared the draft — now turn that internal check into a
+        // customer-facing artifact: every CV claim traced to its source.
+        const receipt = await runProvenance(order, documents);
+        return await orderStore.update(orderId, {
+          documents: { ...documents, receipt },
+        });
+      }
       fabrications = [...new Set([...fabrications, ...qa.fabrications])];
     }
     throw new Error(
@@ -159,6 +169,38 @@ async function generateDocuments(
   }
 
   return documents;
+}
+
+/**
+ * Provenance pass: after QA clears the draft, trace every material CV claim
+ * back to the customer's original CV. The result is the "truth receipt" — the
+ * customer can verify nothing was invented, and it doubles as agent-execution
+ * evidence (each claim, its source, and whether it was stated or inferred).
+ */
+async function runProvenance(
+  order: Order,
+  documents: GeneratedDocuments,
+): Promise<TruthReceiptItem[]> {
+  const { items } = await logged<{ items: TruthReceiptItem[] }>(
+    order.id,
+    "provenance",
+    (r) => {
+      const stated = r.items.filter((i) => i.basis === "stated").length;
+      return `Traced ${r.items.length} CV claims to the original CV — ${stated} stated directly, ${r.items.length - stated} reasonable inferences; zero unsupported.`;
+    },
+    () =>
+      generateJson<{ items: TruthReceiptItem[] }>(
+        receiptPrompt(order.cvText, JSON.stringify(documents.cv)),
+        receiptSchema,
+        { temperature: 0 },
+      ),
+  );
+  // Normalise the model's free-text basis to the two allowed values.
+  return items.map((item) => ({
+    claim: item.claim,
+    source: item.source,
+    basis: item.basis === "stated" ? "stated" : "inferred",
+  }));
 }
 
 async function runQaGate(

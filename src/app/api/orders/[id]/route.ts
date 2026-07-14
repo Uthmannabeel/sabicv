@@ -28,6 +28,7 @@ export async function GET(
       hasCoverLetter: Boolean(order.documents?.coverLetter),
       hasLinkedin: Boolean(order.documents?.linkedin),
       linkedin: order.documents?.linkedin ?? null,
+      receipt: order.documents?.receipt ?? null,
       agentLog: order.agentLog.map(({ at, step, decision }) => ({
         at,
         step,

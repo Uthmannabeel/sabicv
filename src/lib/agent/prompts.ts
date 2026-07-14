@@ -132,3 +132,29 @@ Return:
 - pass: true unless there is at least one material fabrication.
 - fabrications: the material fabrications only (empty if pass).
 - notes: one sentence on overall quality.`;
+
+export const receiptPrompt = (cvText: string, rewrittenCvJson: string) => `
+You are SabiCV's provenance auditor. Produce a "truth receipt" for the rewritten
+CV below: trace every material claim back to the customer's ORIGINAL CV, so the
+customer can prove to themselves — and in an interview — that nothing was invented.
+
+ORIGINAL CV:
+---
+${cvText}
+---
+
+REWRITTEN CV (JSON):
+---
+${rewrittenCvJson}
+---
+
+For each material claim in the rewritten CV — employers, job titles, dates,
+degrees, certifications, tools/skills, achievements, and numbers — return one item:
+- claim: the claim as it reads in the rewritten CV (one short line).
+- source: the exact supporting text QUOTED from the original CV. If the claim is
+  a reasonable inference joining facts the CV states separately, quote those facts.
+- basis: "stated" if the original CV states it directly; "inferred" if it is a
+  reasonable inference from stated facts.
+
+Cover the 6-12 most important substantive claims. Do not list section headings
+or formatting. Never invent a source — every claim must trace to real text above.`;

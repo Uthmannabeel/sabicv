@@ -52,6 +52,14 @@ export interface CvSection {
   body: string; // markdown-lite: lines, "- " bullets
 }
 
+// One line of the "truth receipt": a claim in the rewritten CV traced back to
+// the evidence in the customer's own CV, so nothing has to be taken on trust.
+export interface TruthReceiptItem {
+  claim: string; // the claim as it appears in the rewritten CV
+  source: string; // the supporting text from the customer's original CV
+  basis: "stated" | "inferred"; // stated directly, or a reasonable inference
+}
+
 export interface GeneratedDocuments {
   cv: {
     fullName: string;
@@ -61,6 +69,7 @@ export interface GeneratedDocuments {
   };
   coverLetter?: string;
   linkedin?: { headline: string; about: string };
+  receipt?: TruthReceiptItem[]; // provenance for every material CV claim
 }
 
 export interface AgentLogEntry {
@@ -72,6 +81,7 @@ export interface AgentLogEntry {
     | "cover_letter"
     | "linkedin"
     | "qa"
+    | "provenance"
     | "render"
     | "deliver";
   decision: string; // what the agent decided/did, in plain language

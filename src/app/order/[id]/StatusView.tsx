@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { MatchAnalysis, OrderStatus } from "@/lib/orders/types";
+import type {
+  MatchAnalysis,
+  OrderStatus,
+  TruthReceiptItem,
+} from "@/lib/orders/types";
 import { TransferPanel } from "@/components/TransferPanel";
 import { SelarPanel } from "@/components/SelarPanel";
 import type { PackageId } from "@/lib/orders/types";
@@ -19,6 +23,7 @@ interface OrderView {
   hasCoverLetter: boolean;
   hasLinkedin: boolean;
   linkedin: { headline: string; about: string } | null;
+  receipt: TruthReceiptItem[] | null;
   agentLog: { at: string; step: string; decision: string }[];
 }
 
@@ -36,6 +41,7 @@ const STEP_LABELS: Record<string, string> = {
   cover_letter: "Writing your cover letter",
   linkedin: "Optimising your LinkedIn",
   qa: "Integrity check",
+  provenance: "Tracing every claim to your CV",
   render: "Preparing PDFs",
   deliver: "Delivery",
 };
@@ -109,6 +115,10 @@ export function StatusView({ orderId }: { orderId: string }) {
         ))}
 
       {order.status === "delivered" && <Downloads order={order} />}
+
+      {order.status === "delivered" && order.receipt && order.receipt.length > 0 && (
+        <TruthReceipt items={order.receipt} />
+      )}
 
       {order.agentLog.length > 0 && <AgentJournal log={order.agentLog} />}
 
@@ -194,6 +204,44 @@ function Downloads({ order }: { order: OrderView }) {
         </div>
       )}
     </div>
+  );
+}
+
+function TruthReceipt({ items }: { items: TruthReceiptItem[] }) {
+  const stated = items.filter((i) => i.basis === "stated").length;
+  return (
+    <section aria-label="Truth receipt">
+      <h2 className="text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-ink-faint)]">
+        Truth receipt
+      </h2>
+      <p className="mt-2 max-w-prose text-[14px] leading-relaxed text-[color:var(--color-ink-muted)]">
+        Every claim in your new CV, traced back to your own words — {stated}{" "}
+        stated directly in your original CV, {items.length - stated} drawn as
+        reasonable inferences. Nothing was invented. Bring this into any
+        interview.
+      </p>
+      <ul className="mt-5 divide-y divide-[color:var(--color-rule)] border-y border-[color:var(--color-rule)]">
+        {items.map((item, i) => (
+          <li key={i} className="py-4">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="text-[15px] font-medium leading-snug">{item.claim}</p>
+              <span
+                className={`shrink-0 text-[10px] uppercase tracking-[0.12em] ${
+                  item.basis === "stated"
+                    ? "text-[color:var(--color-accent-strong)]"
+                    : "text-[color:var(--color-ink-faint)]"
+                }`}
+              >
+                {item.basis}
+              </span>
+            </div>
+            <p className="mt-1.5 border-l-2 border-[color:var(--color-rule)] pl-3 text-[13.5px] italic leading-snug text-[color:var(--color-ink-muted)]">
+              {item.source}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -59,3 +59,22 @@ export const qaSchema = {
   },
   required: ["pass", "fabrications", "notes"],
 } as const;
+
+export const receiptSchema = {
+  type: "OBJECT",
+  properties: {
+    items: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          claim: STRING,
+          source: STRING,
+          basis: STRING, // "stated" | "inferred"
+        },
+        required: ["claim", "source", "basis"],
+      },
+    },
+  },
+  required: ["items"],
+} as const;

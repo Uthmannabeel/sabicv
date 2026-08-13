@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
 import type { Order } from "./types";
+import { SupabaseOrderStore } from "./supabase-store";
 
 /**
  * Order persistence. v1 ships a file-backed store so local dev and the demo
@@ -98,4 +99,10 @@ class FileOrderStore implements OrderStore {
   }
 }
 
-export const orderStore: OrderStore = new FileOrderStore();
+const hasSupabase = Boolean(
+  process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+export const orderStore: OrderStore = hasSupabase
+  ? new SupabaseOrderStore()
+  : new FileOrderStore();

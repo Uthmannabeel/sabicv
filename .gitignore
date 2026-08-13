@@ -23,3 +23,5 @@ Thumbs.db
 # Test artifacts
 test-fixtures/*.pdf
 test-fixtures/docx-stage/
+.vercel
+.env*
